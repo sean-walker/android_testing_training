@@ -25,7 +25,9 @@ public class VolleyRequestQueue {
 
         imgLoader = new ImageLoader(
                 reqQueue,
-                new LruBitmapCache(LruBitmapCache.getCacheSize(context)));
+                // change this to some bogus value just for testing purposes
+                new LruBitmapCache(300));
+
     }
 
     private RequestQueue getRequestQueue() {
