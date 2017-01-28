@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,7 +35,6 @@ public class PhotoBlowupFragment extends Fragment {
             throw new NullPointerException(
                     "PhotoBlowupFragment may not be invoked without photo information.");
         }
-
         photoID = b.getString("photoID");
     }
 
@@ -86,7 +86,8 @@ public class PhotoBlowupFragment extends Fragment {
                         try {
                             sizes = response.getJSONObject("sizes").getJSONArray("size");
                             photoUrl = sizes
-                                    .getJSONObject(sizes.length() - 1)
+                                    // for faster loading speeds, get a smaller image size
+                                    .getJSONObject(sizes.length() - 3)
                                     .getString("source");
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -104,7 +105,10 @@ public class PhotoBlowupFragment extends Fragment {
         photoSizesRequest.setTag(RequestTag);
         photoInfoRequest.setTag(RequestTag);
         VolleyRequestQueue.getInstance(getContext()).addToRequestQueue(photoInfoRequest);
+        // debugging
+        Log.d("ADD PHOTO INFO REQUEST", photoInfoRequest.toString());
         VolleyRequestQueue.getInstance(getContext()).addToRequestQueue(photoSizesRequest);
+        Log.d("ADD PHOTO SIZES REQUEST", photoSizesRequest.toString());
 
         return rootView;
     }
