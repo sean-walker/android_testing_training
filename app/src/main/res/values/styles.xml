@@ -8,4 +8,23 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <!-- Add new styles to centralize text styles. -->
+    <style name="photoOverlayText">
+        <item name="android:textColor">@color/textWhite</item>
+        <item name="android:layout_alignStart">@id/photo_blowup</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="albumListText">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/textBlack</item>
+        <item name="android:background">@color/albumTextBackground</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingStart">20sp</item>
+        <item name="android:paddingEnd">0sp</item>
+    </style>
+
 </resources>

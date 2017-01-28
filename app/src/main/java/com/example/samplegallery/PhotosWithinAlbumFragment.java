@@ -60,6 +60,8 @@ public class PhotosWithinAlbumFragment extends Fragment {
         LinearLayout rootView =
                 (LinearLayout) inflater.inflate(
                         R.layout.photos_within_album_fragment, container, false);
+        // note: getChildAt() is probably inferior to getViewById() I think.
+        // The latter is much more direct and also would fail if that view was not returned, instead of throwing a null --sean
         final GridView gv = (GridView) rootView.getChildAt(0);
         final RelativeLayout progressBar = (RelativeLayout)  rootView.getChildAt(1);
         progressBar.setVisibility(View.VISIBLE);
