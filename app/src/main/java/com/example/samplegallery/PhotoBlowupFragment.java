@@ -1,5 +1,6 @@
 package com.example.samplegallery;
 
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -8,11 +9,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.android.volley.Request;
+import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.NetworkImageView;
 import com.example.samplegallery.Utilities.VolleyErrorListener;
@@ -21,6 +27,8 @@ import com.example.samplegallery.Utilities.VolleyRequestQueue;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static android.R.attr.bitmap;
 
 public class PhotoBlowupFragment extends Fragment {
     String photoID = null;
@@ -43,10 +51,15 @@ public class PhotoBlowupFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         RelativeLayout rootView = (RelativeLayout) inflater.
                 inflate(R.layout.photo_blowup_fragment, container, false);
-        final NetworkImageView img = (NetworkImageView) rootView.findViewById(R.id.photo_blowup);
+        final ImageView img = (ImageView) rootView.findViewById(R.id.photo_blowup);
         final TextView photoTitleView = (TextView) rootView.findViewById(R.id.photo_title);
         final TextView photoDescriptionView =
                 (TextView) rootView.findViewById(R.id.photo_description);
+        final ProgressBar progressBar = (ProgressBar) rootView.findViewById(R.id.progress_bar_blowup);
+        // set these to invisible until the image loads, and the progress bar to visible
+        photoDescriptionView.setVisibility(View.INVISIBLE);
+        photoTitleView.setVisibility(View.INVISIBLE);
+        progressBar.setVisibility(View.VISIBLE);
         // create a request for photo title
         JsonObjectRequest photoInfoRequest = new JsonObjectRequest(
                 Request.Method.GET,
@@ -86,6 +99,7 @@ public class PhotoBlowupFragment extends Fragment {
                         try {
                             sizes = response.getJSONObject("sizes").getJSONArray("size");
                             photoUrl = sizes
+                                    // originally, you were getting the original (very large) image size, unnecessarily since it didn't even fit the screen
                                     // for faster loading speeds, get a smaller image size
                                     .getJSONObject(sizes.length() - 3)
                                     .getString("source");
@@ -93,10 +107,24 @@ public class PhotoBlowupFragment extends Fragment {
                             e.printStackTrace();
                         }
 
-                        // finally set the url for the image
-                        img.setImageUrl(
-                                photoUrl,
-                                VolleyRequestQueue.getInstance(getContext()).getImgLoader());
+                        // create a request queue for the images themselves
+                        ImageRequest bitmapRequest = new ImageRequest(photoUrl,
+                                new Response.Listener<Bitmap>() {
+                                    @Override
+                                    public void onResponse(Bitmap bitmap) {
+                                        img.setImageBitmap(bitmap);
+                                        photoDescriptionView.setVisibility(View.VISIBLE);
+                                        photoTitleView.setVisibility(View.VISIBLE);
+                                        progressBar.setVisibility(View.INVISIBLE);
+                                    }
+                                }, 0, 0, null,
+                                new Response.ErrorListener() {
+                                    @Override
+                                    public void onErrorResponse(VolleyError error) {
+                                        Log.d("IMAGEREQUEST ERROR: ", error.toString());
+                                    }
+                                });
+                        VolleyRequestQueue.getInstance(getContext()).addToRequestQueue(bitmapRequest);
                     }
                 },
                 new VolleyErrorListener(getContext())
@@ -105,10 +133,7 @@ public class PhotoBlowupFragment extends Fragment {
         photoSizesRequest.setTag(RequestTag);
         photoInfoRequest.setTag(RequestTag);
         VolleyRequestQueue.getInstance(getContext()).addToRequestQueue(photoInfoRequest);
-        // debugging
-        Log.d("ADD PHOTO INFO REQUEST", photoInfoRequest.toString());
         VolleyRequestQueue.getInstance(getContext()).addToRequestQueue(photoSizesRequest);
-        Log.d("ADD PHOTO SIZES REQUEST", photoSizesRequest.toString());
 
         return rootView;
     }
